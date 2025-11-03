@@ -52,57 +52,48 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def run_hub():
-    """Run the hub service"""
+    """Run the FastAPI hub service with uvicorn"""
     logger.info("="*80)
-    logger.info("STARTING PULSE HUB")
+    logger.info("STARTING PULSE HUB (FastAPI)")
+    logger.info("Hub API will be available at: http://localhost:7000")
     logger.info("="*80)
     
     try:
-        from services.hub.main import PulseHub
+        import uvicorn
+        from services.hub.main import app
         
-        hub = PulseHub()
-        hub.start()
-        
-        # Store hub instance for dashboard
-        import dashboard.api.server as dashboard_server
-        dashboard_server.set_hub_instance(hub)
-        
-        # Keep hub running
-        while True:
-            time.sleep(60)
-            status = hub.get_status()
-            
-            logger.info("="*80)
-            logger.info("HUB STATUS UPDATE")
-            logger.info("="*80)
-            logger.info(f"Running: {status['running']}")
-            logger.info(f"Occupancy: {status['sensors'].get('occupancy', 0)}")
-            logger.info(f"Temperature: {status['sensors'].get('temperature_f', 'N/A')}°F")
-            logger.info(f"Humidity: {status['sensors'].get('humidity', 'N/A')}%")
-            logger.info(f"Light Level: {status['sensors'].get('light_level', 'N/A')} lux")
-            logger.info(f"Noise Level: {status['sensors'].get('noise_db', 'N/A')} dB")
-            
-            song = status['sensors'].get('current_song', {})
-            if song and song.get('title') not in (None, 'Unknown'):
-                logger.info(f"Now Playing: {song.get('title')} - {song.get('artist')}")
-            
-            logger.info("="*80)
+        # Run uvicorn server
+        uvicorn.run(
+            app,
+            host='0.0.0.0',
+            port=7000,
+            log_level='info'
+        )
             
     except Exception as e:
         logger.error(f"Hub error: {e}", exc_info=True)
 
 def run_dashboard():
-    """Run the dashboard API server"""
+    """Run the Flask dashboard wizard server"""
     # Give hub time to start first
     time.sleep(5)
     
     logger.info("="*80)
-    logger.info("STARTING DASHBOARD API SERVER")
+    logger.info("STARTING DASHBOARD WIZARD (Flask)")
+    logger.info("Dashboard will be available at: http://localhost:9090")
     logger.info("="*80)
     
     try:
-        from dashboard.api.server import run_server
-        run_server(host='0.0.0.0', port=8080, debug=False)
+        from dashboard.api.server import app
+        
+        # Run Flask server with retry logic
+        for attempt in range(5):
+            try:
+                app.run(host='0.0.0.0', port=9090, debug=False)
+                break
+            except OSError as e:
+                logger.warning(f"Dashboard bind failed (attempt {attempt+1}/5): {e}")
+                time.sleep(2)
     except Exception as e:
         logger.error(f"Dashboard error: {e}", exc_info=True)
 
@@ -111,8 +102,8 @@ def main():
     logger.info("\n" + "="*80)
     logger.info("PULSE SYSTEM - INTEGRATED STARTUP")
     logger.info("="*80)
-    logger.info("Hub + Dashboard running in single process")
-    logger.info("Dashboard will be available at: http://localhost:8080")
+    logger.info("Hub API (FastAPI) will run on: http://localhost:7000")
+    logger.info("Dashboard Wizard (Flask) will run on: http://localhost:9090")
     logger.info("="*80 + "\n")
     
     # Create log directory
