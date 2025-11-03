@@ -160,7 +160,7 @@ cat /var/log/pulse/hardware_report.txt
 ```bash
 cd /opt/pulse
 source venv/bin/activate
-python3 -c "from services.sensors.health_monitor import *; monitor = HealthMonitor(); print(monitor.test_all_modules())"
+python3 -m services.sensors.hardware_detect
 ```
 
 **Check I2C devices (for BME280, light sensor):**

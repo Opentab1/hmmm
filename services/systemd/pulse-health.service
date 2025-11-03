@@ -8,7 +8,7 @@ Type=simple
 User=pi
 WorkingDirectory=/opt/pulse
 Environment="PYTHONPATH=/opt/pulse"
-ExecStart=/opt/pulse/venv/bin/python3 -c "from services.sensors.health_monitor import *; monitor = HealthMonitor(); [monitor.register_test(n, globals()[f'test_{n}']) for n in ['camera', 'microphone', 'bme280', 'pan_tilt', 'ai_hat', 'light_sensor']]; monitor.run_continuous_monitoring()"
+ExecStart=/opt/pulse/venv/bin/python3 -m services.sensors.health_monitor
 Restart=always
 RestartSec=60
 TimeoutStartSec=30

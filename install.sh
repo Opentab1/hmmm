@@ -274,30 +274,44 @@ sudo -u ${USER} venv/bin/python3 << 'PYEOF'
 import sys
 sys.path.insert(0, '/opt/pulse')
 
-from services.sensors.health_monitor import *
+from services.sensors import hardware_detect
 import json
 
-monitor = HealthMonitor()
-monitor.register_test("camera", test_camera)
-monitor.register_test("mic", test_microphone)
-monitor.register_test("bme280", test_bme280)
-monitor.register_test("pan_tilt", test_pan_tilt)
-monitor.register_test("ai_hat", test_ai_hat)
-monitor.register_test("light_sensor", test_light_sensor)
+# Run detection and get results
+hardware_detect.main()
 
-results = monitor.test_all_modules()
-
-print("\n" + "="*50)
-print("Hardware Detection Results:")
-print("="*50)
-for module, status in results.items():
-    symbol = "✓" if status else "✗"
-    print(f"{symbol} {module}: {'OK' if status else 'Not Found'}")
-print("="*50)
-
-# Save report
-with open('/var/log/pulse/hardware_report.txt', 'w') as f:
-    json.dump(results, f, indent=2)
+# Read the results that were written to the status file
+status_file = '/opt/pulse/config/hardware_status.json'
+try:
+    with open(status_file, 'r') as f:
+        results = json.load(f)
+    
+    print("\n" + "="*50)
+    print("Hardware Detection Results:")
+    print("="*50)
+    
+    modules = results.get('modules', {})
+    for module, info in modules.items():
+        present = info.get('present', False)
+        symbol = "✓" if present else "✗"
+        status = 'OK' if present else 'Not Found'
+        print(f"{symbol} {module}: {status}")
+    
+    print("="*50)
+    
+    # Save human-readable report
+    with open('/var/log/pulse/hardware_report.txt', 'w') as f:
+        f.write("Hardware Detection Results:\n")
+        f.write("="*50 + "\n")
+        for module, info in modules.items():
+            present = info.get('present', False)
+            status = 'OK' if present else 'Not Found'
+            f.write(f"{module}: {status}\n")
+        f.write("="*50 + "\n")
+        f.write(f"\nFull JSON report: {status_file}\n")
+        
+except Exception as e:
+    print(f"Warning: Could not read hardware detection results: {e}")
 PYEOF
 
 echo -e "${GREEN}"
