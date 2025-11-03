@@ -29,7 +29,7 @@ Just follow your existing quickstart guide - everything will work automatically:
 
 ```bash
 # 1. Install Pulse (one command)
-curl -fsSL https://raw.githubusercontent.com/Opentab1/thefinale2/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/Opentab1/hmmm/main/install.sh | sudo bash
 
 # 2. Complete setup wizard at http://localhost:9090
 # 3. Dashboard launches at http://localhost:8080 with working AI!
