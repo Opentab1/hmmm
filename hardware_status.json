@@ -1,1 +1,8 @@
-{\n  "camera": null,\n  "mic": null,\n  "bme280": null,\n  "light_sensor": null,\n  "ai_hat": null\n}\n
+{
+  "camera": null,
+  "mic": null,
+  "bme280": null,
+  "light_sensor": null,
+  "ai_hat": null,
+  "last_checked": null
+}

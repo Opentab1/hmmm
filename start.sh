@@ -1,5 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
+
+# Pulse Dashboard Kiosk Mode Startup Script (resilient)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -49,14 +51,14 @@ else
   OZONE_FLAG="--ozone-platform=x11"
 fi
 
-# Common Chromium flags for kiosk stability
+# Common Chromium flags for kiosk stability (no fullscreen kiosk to allow normal tabs)
 COMMON_FLAGS=(
-  --kiosk
   --noerrdialogs
   --disable-infobars
   --no-first-run
   --disable-session-crashed-bubble
   --disable-features=TranslateUI
+  --disable-pinch
   --overscroll-history-navigation=0
   --password-store=basic
   --use-mock-keychain
@@ -64,6 +66,18 @@ COMMON_FLAGS=(
   --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT'
 )
 
-TARGET_URL="http://localhost:${FALLBACK_PORT}/index.html"
+# Decide preferred target (wizard vs dashboard) based on setup marker
+PREFERRED="wizard"
+WIZARD_COMPLETE="/opt/pulse/config/.wizard_complete"
+if [[ -f "$WIZARD_COMPLETE" ]]; then
+  PREFERRED="dashboard"
+fi
 
-exec "$CHROMIUM_BIN" "${COMMON_FLAGS[@]}" "$OZONE_FLAG" --app="$TARGET_URL"
+# Build target URL with preference hint for the fallback page script
+TARGET_URL="http://localhost:${FALLBACK_PORT}/index.html?preferred=${PREFERRED}"
+
+# Launch in app mode focused on our page, but still allows Alt+Tab to terminal
+exec "$CHROMIUM_BIN" "${COMMON_FLAGS[@]}" "$OZONE_FLAG" \
+  --app="$TARGET_URL" \
+  --window-size=1280,800 \
+  --force-device-scale-factor=1.0
