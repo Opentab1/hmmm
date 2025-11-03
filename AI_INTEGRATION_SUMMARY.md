@@ -280,7 +280,7 @@ python3 -c "from shazamio import Shazam; print('OK')"
   - Song detection integration
 
 - **thefinale2 (Pulse 1.0)**: Target integration platform
-  - Repository: https://github.com/Opentab1/thefinale2
+  - Repository: https://github.com/Opentab1/hmmm
   - Venue automation and dashboard system
 
 ## Next Steps
