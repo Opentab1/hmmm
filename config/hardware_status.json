@@ -1,0 +1,21 @@
+{
+  "last_check": null,
+  "last_checked": null,
+  "modules": {
+    "camera": {
+      "present": false
+    },
+    "mic": {
+      "present": false
+    },
+    "bme280": {
+      "present": false
+    },
+    "light_sensor": {
+      "present": false
+    },
+    "ai_hat": {
+      "present": false
+    }
+  }
+}
